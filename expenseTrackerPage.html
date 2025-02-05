@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        table { width: 50%; margin: 20px auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; }
+        th { background-color: #f2f2f2; }
+        input { margin: 5px; padding: 8px; }
+        button { padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Simple Expense Tracker</h2>
+
+    <!-- Form for adding expenses -->
+    <input type="number" id="amount" placeholder="Amount">
+    <input type="text" id="category" placeholder="Category">
+    <input type="text" id="note" placeholder="Note">
+    <button onclick="addExpense()">Add Expense</button>
+
+    <!-- Table to display saved expenses -->
+    <h3>Expense History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody id="expenseTable"></tbody>
+    </table>
+
+    <script>
+        const API_URL = "https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbwWsauCi561DLEm1ZpepBze3ELOjr16vAUOq7THMEjcQCTbkNihn_grIJ1Pgj_1OuJ9wQ/exec"; // Replace with your actual Google Apps Script URL
+
+        function addExpense() {
+            let amount = document.getElementById("amount").value;
+            let category = document.getElementById("category").value;
+            let note = document.getElementById("note").value;
+
+            fetch(API_URL, {
+				redirect: "follow",
+                method: "POST",
+                body: JSON.stringify({ amount, category, note }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert("Expense Added Successfully!");
+                fetchExpenses(); // Refresh the table
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function fetchExpenses() {
+            fetch(API_URL)
+            .then(response => response.json())
+            .then(data => {
+                let table = document.getElementById("expenseTable");
+                table.innerHTML = ""; // Clear previous entries
+                data.slice(1).forEach(row => {
+                    let tr = document.createElement("tr");
+                    row.forEach(cell => {
+                        let td = document.createElement("td");
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    table.appendChild(tr);
+                });
+            })
+            .catch(error => console.error("Error fetching expenses:", error));
+        }
+
+        // Load existing expenses on page load
+        fetchExpenses();
+    </script>
+
+</body>
+</html>
